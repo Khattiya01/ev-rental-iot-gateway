@@ -1,0 +1,33 @@
+
+> ev-rental-iot-gateway@1.0.0 dev C:\Projects\EV_Rental_GO\ev-rental-iot-gateway
+> nodemon --watch src --ext ts --exec ts-node src/index.ts
+
+[33m[nodemon] 3.1.14[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): src\**\*[39m
+[33m[nodemon] watching extensions: ts[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+{"level":"info","ts":"2026-06-18T02:53:23.640Z","event":"gateway_started","port":"3001"}
+{"level":"info","ts":"2026-06-18T02:53:23.645Z","event":"redis_connected"}
+{"level":"info","ts":"2026-06-18T02:53:23.647Z","event":"mqtt_connected"}
+{"level":"info","ts":"2026-06-18T02:53:23.649Z","event":"mqtt_subscribed","topic":"vehicle/+/data"}
+{"level":"info","ts":"2026-06-18T02:57:39.020Z","event":"telemetry_received","vehicleId":"60624483-080f-44c0-b600-aebe08b91867"}
+{"level":"info","ts":"2026-06-18T02:58:40.466Z","event":"telemetry_received","vehicleId":"60624483-080f-44c0-b600-aebe08b91867"}
+{"level":"warn","ts":"2026-06-18T02:59:11.344Z","event":"telemetry_unknown_vehicle","vehicleId":"00000000-0000-0000-0000-000000000000"}
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+{"level":"info","ts":"2026-06-18T03:03:03.622Z","event":"gateway_started","port":"3001"}
+{"level":"info","ts":"2026-06-18T03:03:03.627Z","event":"redis_connected"}
+{"level":"info","ts":"2026-06-18T03:03:03.629Z","event":"mqtt_connected"}
+{"level":"info","ts":"2026-06-18T03:03:03.631Z","event":"mqtt_subscribed","topic":"vehicle/+/data"}
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+{"level":"info","ts":"2026-06-18T03:03:12.806Z","event":"gateway_started","port":"3001"}
+{"level":"info","ts":"2026-06-18T03:03:12.810Z","event":"redis_connected"}
+{"level":"info","ts":"2026-06-18T03:03:12.812Z","event":"mqtt_connected"}
+{"level":"info","ts":"2026-06-18T03:03:12.814Z","event":"mqtt_subscribed","topic":"vehicle/+/data"}
+{"level":"info","ts":"2026-06-18T03:07:12.262Z","event":"telemetry_received","vehicleId":"60624483-080f-44c0-b600-aebe08b91867"}
+{"level":"info","ts":"2026-06-18T03:07:12.426Z","event":"telemetry_received","vehicleId":"60624483-080f-44c0-b600-aebe08b91867"}
+{"level":"info","ts":"2026-06-18T03:07:12.622Z","event":"telemetry_received","vehicleId":"60624483-080f-44c0-b600-aebe08b91867"}
