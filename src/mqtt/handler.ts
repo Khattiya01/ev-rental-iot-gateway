@@ -2,6 +2,8 @@ import { validateTelemetry } from '../validators/telemetry'
 import { vehicleExists } from '../services/vehicle-validator'
 import { writePosition } from '../services/redis-writer'
 import { enqueueTelemetry } from '../services/telemetry-writer'
+import { checkBatteryAlert } from '../services/alert-service'
+import { syncVehicle } from '../services/vehicle-sync'
 
 const TOPIC_PATTERN = /^vehicle\/([^/]+)\/data$/
 
@@ -44,6 +46,8 @@ async function validateAndProcess(vehicleId: string, data: unknown): Promise<voi
 
   await writePosition(result.data)
   enqueueTelemetry(result.data)
+  await checkBatteryAlert(result.data)
+  await syncVehicle(result.data)
 
   log('info', 'telemetry_received', { vehicleId })
 }
