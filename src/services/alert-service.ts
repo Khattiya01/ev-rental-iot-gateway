@@ -32,3 +32,16 @@ export async function checkBatteryAlert(payload: TelemetryPayload): Promise<void
     log('error', 'battery_alert_failed', { vehicleId: payload.vehicle_id, error: (err as Error).message })
   }
 }
+
+// Receiving valid telemetry means the vehicle is reachable again — unlike battery_low
+// (manual resolve only), 'offline' is a connectivity state that's simply over once data flows again.
+export async function resolveOfflineAlert(vehicleId: string): Promise<void> {
+  try {
+    await pool.query(
+      `UPDATE alerts SET resolved = true WHERE entity_id = $1 AND type = 'vehicle_offline' AND resolved = false`,
+      [vehicleId],
+    )
+  } catch (err) {
+    log('error', 'resolve_offline_alert_failed', { vehicleId, error: (err as Error).message })
+  }
+}

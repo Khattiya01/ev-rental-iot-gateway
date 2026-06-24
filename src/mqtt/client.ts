@@ -62,3 +62,18 @@ export function connectMqtt(): MqttClient {
 export function getMqttClient(): MqttClient | null {
   return client
 }
+
+// client?.end() is fire-and-forget here, not awaited on its completion callback. A
+// straggler in-flight 'message' event can still call enqueueTelemetry() after
+// drainTelemetry() has already snapshotted-and-cleared the buffer, leaving at most a
+// few telemetry rows unflushed when process.exit() runs. Accepted as a bounded,
+// pre-existing exposure (same as any abrupt kill before this feature existed) rather
+// than guess-fixed without verifying exact message-vs-end() interleaving against a live broker.
+export function disconnectMqtt(): void {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer)
+    reconnectTimer = null
+  }
+  client?.end()
+  log('info', 'mqtt_disconnected_for_shutdown')
+}

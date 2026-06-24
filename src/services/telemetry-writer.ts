@@ -13,10 +13,10 @@ let buffer: TelemetryPayload[] = []
 
 export function enqueueTelemetry(payload: TelemetryPayload): void {
   buffer.push(payload)
-  if (buffer.length >= BATCH_SIZE) flush()
+  if (buffer.length >= BATCH_SIZE) drainTelemetry()
 }
 
-async function flush(): Promise<void> {
+export async function drainTelemetry(): Promise<void> {
   if (buffer.length === 0) return
   const batch = buffer
   buffer = []
@@ -24,7 +24,7 @@ async function flush(): Promise<void> {
   const values: unknown[] = []
   const rows = batch.map((item, i) => {
     const offset = i * COLUMNS_PER_ROW
-    values.push(item.vehicle_id, item.timestamp, item.soc, item.temperature, item.charge_cycles, null, item.lat, item.lng)
+    values.push(item.vehicle_id, item.timestamp, Math.round(item.soc), item.temperature, item.charge_cycles, null, item.lat, item.lng)
     const placeholders = Array.from({ length: COLUMNS_PER_ROW }, (_, j) => `$${offset + j + 1}`)
     return `(${placeholders.join(', ')})`
   })
@@ -38,6 +38,13 @@ async function flush(): Promise<void> {
   }
 }
 
-setInterval(() => {
-  flush().catch((err) => log('error', 'telemetry_flush_failed', { error: (err as Error).message }))
+let flushInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
+  drainTelemetry().catch((err) => log('error', 'telemetry_flush_failed', { error: (err as Error).message }))
 }, BATCH_INTERVAL_MS)
+
+export function stopTelemetryFlushInterval(): void {
+  if (flushInterval) {
+    clearInterval(flushInterval)
+    flushInterval = null
+  }
+}

@@ -2,8 +2,9 @@ import { validateTelemetry } from '../validators/telemetry'
 import { vehicleExists } from '../services/vehicle-validator'
 import { writePosition } from '../services/redis-writer'
 import { enqueueTelemetry } from '../services/telemetry-writer'
-import { checkBatteryAlert } from '../services/alert-service'
+import { checkBatteryAlert, resolveOfflineAlert } from '../services/alert-service'
 import { syncVehicle } from '../services/vehicle-sync'
+import { recordMessage } from '../services/message-rate-tracker'
 
 const TOPIC_PATTERN = /^vehicle\/([^/]+)\/data$/
 
@@ -18,6 +19,7 @@ export function handleMessage(topic: string, payload: Buffer): void {
     return
   }
   const vehicleId = match[1]
+  recordMessage()
 
   let data: unknown
   try {
@@ -45,6 +47,7 @@ async function validateAndProcess(vehicleId: string, data: unknown): Promise<voi
   }
 
   await writePosition(result.data)
+  await resolveOfflineAlert(result.data.vehicle_id)
   enqueueTelemetry(result.data)
   await checkBatteryAlert(result.data)
   await syncVehicle(result.data)
