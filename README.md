@@ -109,6 +109,36 @@ Every minute, a cron job (`src/services/offline-detector.ts`) scans Redis for ve
 - `GET /health` — `200 { status: "ok", mqtt, redis, db }` or `503 { status: "degraded", ... }` if any dependency is down.
 - `GET /status` — `200 { vehiclesOnline, messagesPerMinute }`.
 
+## Testing
+
+### Unit tests (Vitest)
+
+```bash
+pnpm test          # run once
+pnpm test:watch    # watch mode
+```
+
+Every file under `src/services/` and `src/validators/` has a matching `*.test.ts` — these are the priority targets since DB/Redis/MQTT clients are all injectable, so the core logic (threshold math, batching, dedupe, reconnect backoff, message routing order) is fully mockable. See `ev-rental-go-backoffice/planings/TESTING_PLAN.md` §2.2 for the full module-by-module rationale, including the production bug (`soc: 78.5` inserted into an `integer` column) that motivated several of these.
+
+### E2E full-chain tests (`@gateway`, driven from the backoffice repo)
+
+This repo has no Playwright suite of its own — instead, the backoffice repo's `pnpm test:e2e:gateway` suite starts this process (via `dev:test`, see below) and drives it with real MQTT messages to verify the whole chain (MQTT → validate → Redis/Postgres → backoffice UI). Run from `ev-rental-go-backoffice/`:
+
+```bash
+pnpm test:e2e:gateway
+```
+
+For this to work, this repo needs:
+
+- **`.env.test`** — same shape as `.env.example`, but pointed at the backoffice's isolated test resources instead of dev ones:
+  - `DATABASE_URL` → the `ev_rental_go_test` database (same Postgres container, different DB name)
+  - `REDIS_URL` → Redis logical db `1` (e.g. `redis://localhost:6379/1`) instead of the default `0`
+  - `MQTT_URL`/credentials can stay the same — Mosquitto isn't test/dev-isolated, it's just transport
+- **`dev:test` script** (already in `package.json`): `ts-node src/index.ts dotenv_config_path=.env.test` — loads `.env.test` instead of `.env`, and should run on a different `PORT` than your local dev gateway (e.g. `3101` vs `3001`) so both can coexist
+- Two vehicle MQTT credentials provisioned in the backoffice repo's `mosquitto/passwd`, matching fixed vehicle UUIDs the E2E fixtures seed into `ev_rental_go_test` — see `ev-rental-go-backoffice/planings/TESTING_PLAN.md` §6 progress log for how these were set up
+
+Playwright manages this process's lifecycle automatically (starts it, waits on `GET /health`, tears it down after) — you don't need to run `dev:test` manually unless debugging.
+
 ## Logs
 
 All logs are single-line JSON (`{ level, ts, event, ...fields }`) to stdout — suitable for direct ingestion by a log collector. Local dev runs (e.g. under pm2) write to `gateway.log` / `gateway_out.log` / `gateway_err.log`.
